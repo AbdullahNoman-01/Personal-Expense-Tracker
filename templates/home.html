@@ -1,0 +1,1214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Expense Tracker</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- Mobile Drawer Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- ============================================================
+             Left Sidebar Navigation (Desktop Collapsible & Mobile Drawer)
+             ============================================================ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <!-- Brand Logo -->
+                <a href="{% url 'home' %}" class="logo-container" title="SmartSpend Tracker">
+                    <div class="logo-icon">
+                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="36" height="36" rx="10" fill="#F0F7FF"/>
+                            <path d="M12 11.5C12 9.8 13.5 8.5 15.5 8.5H22C24 8.5 25 10 25 11.8C25 14.5 22.5 15.5 20 16.2L16 17.2C13.5 18 11 19.2 11 22.2C11 24.2 12.5 25.5 15 25.5H22C24 25.5 25.5 24.2 25.5 22.5" 
+                                  stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M11 14H24" stroke="currentColor" opacity="0.6" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Expense<span>Tracker</span></span>
+                </a>
+
+                <!-- Collapse / Expand Toggle Button (>>) & Mobile Close -->
+                <div class="collapse-btn-wrapper">
+                    <button class="collapse-btn" id="collapseBtn" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="13 17 18 12 13 7"></polyline>
+                            <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                    </button>
+                    <!-- Close button visible only on mobile drawer -->
+                    <button class="close-sidebar-mobile" id="closeSidebarMobileBtn" title="Close" aria-label="Close menu">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Navigation List with Icons & Names -->
+                <ul class="nav-menu">
+                    <!-- 1. Home / Dashboard -->
+                    <li class="nav-item-wrapper">
+                        <a href="#dashboard" class="nav-link icon-home active" data-view="dashboard" title="Dashboard">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Transfer / Cards -->
+                    <li class="nav-item-wrapper">
+                        <a href="#cards" class="nav-link icon-transfer" data-view="cards" title="Cards & Transfers">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="5" width="14" height="10" rx="2"></rect>
+                                    <rect x="7" y="9" width="14" height="10" rx="2"></rect>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Cards & Transfers</span>
+                        </a>
+                    </li>
+
+                    <!-- 3. Invoices / Bills -->
+                    <li class="nav-item-wrapper">
+                        <a href="#invoices" class="nav-link icon-invoice" data-view="invoices" title="Invoices">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Invoices & Bills</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Transactions / List -->
+                    <li class="nav-item-wrapper">
+                        <a href="#transactions" class="nav-link icon-list" data-view="transactions" title="Transactions">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <circle cx="4" cy="6" r="1.5" fill="currentColor"></circle>
+                                    <circle cx="4" cy="12" r="1.5" fill="currentColor"></circle>
+                                    <circle cx="4" cy="18" r="1.5" fill="currentColor"></circle>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Transactions</span>
+                        </a>
+                    </li>
+
+                    <!-- 5. Rewards / Voucher -->
+                    <li class="nav-item-wrapper">
+                        <a href="#rewards" class="nav-link icon-rewards" data-view="rewards" title="Rewards">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="3" width="16" height="18" rx="3"></rect>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                    <path d="M10 15l2-1 2 1v3l-2-1-2 1z"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Rewards & Points</span>
+                        </a>
+                    </li>
+
+                    <div class="nav-divider"></div>
+
+                    <!-- 7. Edit / Quick Budget -->
+                    <li class="nav-item-wrapper">
+                        <a href="#budget" class="nav-link icon-edit" data-view="budget" title="Budget Planner">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Budget Planner</span>
+                        </a>
+                    </li>
+
+                    <!-- 8. Analytics / Reports -->
+                    <li class="nav-item-wrapper">
+                        <a href="#analytics" class="nav-link icon-analytics" data-view="analytics" title="Analytics">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Analytics</span>
+                        </a>
+                    </li>
+
+                    <!-- 9. Color Theme Picker Button -->
+                    <li class="nav-item-wrapper color-picker-item">
+                        <button class="nav-link icon-palette" id="colorPaletteBtn" title="Choose Theme Color" aria-label="Theme Color Picker">
+                            <span class="nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="nav-label">Theme Color</span>
+                            <span class="color-status-dot"></span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Bottom Section (Dynamic User Profile) -->
+            <div class="sidebar-bottom">
+                {% if user.is_authenticated %}
+                <!-- Logged In User Profile -->
+                <a href="{% url 'profile' %}" class="user-profile-badge" title="View Profile">
+                    <div class="avatar-wrapper">
+                        <img src="{{ user.profile.avatar_url }}" 
+                             alt="{{ user.username }}" 
+                             class="user-avatar-img"
+                             onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}'">
+                        <span class="status-indicator"></span>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-role">{{ user.email|default:"Active Account" }}</span>
+                    </div>
+                </a>
+                {% else %}
+                <!-- Guest User -->
+                <a href="{% url 'login' %}" class="user-profile-badge" title="Sign In">
+                    <div class="avatar-wrapper">
+                        <div class="guest-avatar-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">Sign In</span>
+                        <span class="user-role">Guest Mode</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- VIP / Crown Badge -->
+                <a href="javascript:void(0)" class="crown-badge" id="proUpgradeBtn" title="Upgrade to Pro">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V18H19V19Z"/>
+                    </svg>
+                    <span class="crown-label">Upgrade to Pro</span>
+                </a>
+
+                <!-- Day / Night Mode Switcher -->
+                <div class="theme-switcher" id="themeSwitcher" title="Switch Theme">
+                    <button class="theme-toggle-btn active" id="btnLightMode" aria-label="Light Mode">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="4"></circle>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                        </svg>
+                    </button>
+                    <button class="theme-toggle-btn" id="btnDarkMode" aria-label="Dark Mode">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Floating 5-Color Popover -->
+        <div class="color-palette-popover" id="colorPalettePopover">
+            <div class="popover-header">
+                <span class="popover-title">Choose Accent</span>
+            </div>
+            <div class="color-swatches-grid">
+                <!-- 1. Dark Red -->
+                <button class="color-swatch-btn swatch-dark-red" data-color="dark-red" title="Dark Red" aria-label="Dark Red">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <!-- 2. Blue (Default) -->
+                <button class="color-swatch-btn swatch-blue active" data-color="blue" title="Blue" aria-label="Blue">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <!-- 3. Green -->
+                <button class="color-swatch-btn swatch-green" data-color="green" title="Green" aria-label="Green">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <!-- 4. Purple -->
+                <button class="color-swatch-btn swatch-purple" data-color="purple" title="Purple" aria-label="Purple">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <!-- 5. Orange -->
+                <button class="color-swatch-btn swatch-orange" data-color="orange" title="Orange" aria-label="Orange">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             Main Content Area with Top Header
+             ============================================================ -->
+        <main class="main-wrapper" id="mainWrapper">
+            <!-- Top Navigation Header -->
+            <header class="top-header">
+                <!-- Header Left: Mobile Drawer Trigger + Search -->
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation Menu" title="Menu">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="7" x2="20" y2="7"></line>
+                            <line x1="4" y1="12" x2="20" y2="12"></line>
+                            <line x1="4" y1="17" x2="20" y2="17"></line>
+                        </svg>
+                    </button>
+
+                    <div class="search-container">
+                        <div class="search-bar">
+                            <span class="search-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </span>
+                            <input type="text" class="search-input" placeholder="Search" aria-label="Search">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Header Right Actions -->
+                <div class="header-actions">
+                    <!-- + Add money Button -->
+                    <button class="btn-add-money" id="addMoneyBtn" title="Add funds">
+                        <span class="btn-add-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                        </span>
+                        <span>Add money</span>
+                    </button>
+
+                    <!-- Notifications Bell with Alert Dot & Interactive Dropdown -->
+                    <div class="notification-wrapper">
+                        <button class="notification-btn" id="notificationBtn" aria-label="Notifications" title="Notifications">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span class="notification-dot" id="notificationDot"></span>
+                        </button>
+
+                        <!-- Notification Dropdown Popover -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notif-header">
+                                <div class="notif-title-row">
+                                    <span class="notif-title">Notifications</span>
+                                    <span class="notif-badge" id="notifCountBadge">3 New</span>
+                                </div>
+                                <button class="btn-mark-read" id="btnMarkAllRead">Mark all read</button>
+                            </div>
+                            <div class="notif-list" id="notifList">
+                                <div class="notif-item unread">
+                                    <div class="notif-icon notif-icon-success">💰</div>
+                                    <div class="notif-body">
+                                        <div class="notif-text"><strong>Salary Credited:</strong> +$3,250.00 deposited into your primary wallet.</div>
+                                        <div class="notif-time">10 mins ago</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item unread">
+                                    <div class="notif-icon notif-icon-warning">⚠️</div>
+                                    <div class="notif-body">
+                                        <div class="notif-text"><strong>Budget Alert:</strong> Food & Dining spending has reached 85% of monthly goal.</div>
+                                        <div class="notif-time">2 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item unread">
+                                    <div class="notif-icon notif-icon-info">💳</div>
+                                    <div class="notif-body">
+                                        <div class="notif-text"><strong>Subscription Renewal:</strong> Netflix -$15.99 billed successfully.</div>
+                                        <div class="notif-time">Yesterday</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic User Account / Avatar Dropdown -->
+                    {% if user.is_authenticated %}
+                    <div class="user-dropdown-container">
+                        <button class="header-avatar-btn" id="headerAvatarBtn" aria-label="Account Menu" title="{{ user.username }}">
+                            <img src="{{ user.profile.avatar_url }}" 
+                                 alt="{{ user.username }}" 
+                                 class="header-avatar-img"
+                                 onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}'">
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="user-dropdown-header">
+                                <div class="dropdown-user-name">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="dropdown-user-email">{{ user.email|default:"No email provided" }}</div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'profile' %}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="{% url 'logout' %}" class="dropdown-item dropdown-item-danger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Auth Links when not logged in -->
+                    <div class="auth-action-buttons">
+                        <a href="{% url 'login' %}" class="btn-auth-login">Login</a>
+                        <a href="{% url 'register' %}" class="btn-auth-signup">Sign Up</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Dashboard Content Container (Multi-View Application) -->
+            <section class="content-area">
+                <!-- Django Flash Messages -->
+                {% if messages %}
+                <div class="dash-alert-container">
+                    {% for message in messages %}
+                    <div class="dash-alert-item {{ message.tags }}">
+                        <span>{{ message }}</span>
+                        <button class="dash-alert-close" onclick="this.parentElement.remove();">&times;</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Guest Mode Notice Banner (if unauthenticated) -->
+                {% if not user.is_authenticated %}
+                <div class="guest-banner-card">
+                    <div class="guest-banner-left">
+                        <div class="guest-banner-icon">💡</div>
+                        <div>
+                            <h4 class="guest-banner-title">Guest Preview Mode Active</h4>
+                            <p class="guest-banner-text">You are testing with demo data. Create a free account or login to track your own real-time finances with persistent local storage!</p>
+                        </div>
+                    </div>
+                    <div class="guest-banner-actions">
+                        <a href="{% url 'login' %}" class="btn-guest-login">Sign In</a>
+                        <a href="{% url 'register' %}" class="btn-guest-signup">Create Account</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ========================================================
+                     VIEW 1: DASHBOARD OVERVIEW (Default View)
+                     ======================================================== -->
+                <div class="app-view active" id="viewDashboard">
+                    <!-- Dashboard Welcome Banner -->
+                    <div class="dash-welcome-row">
+                        <div class="dash-welcome-text">
+                            <h1 class="dash-title">
+                                Good day, <span class="text-highlight">{% if user.is_authenticated %}{{ user.first_name|default:user.username }}{% else %}Guest User{% endif %}</span> 👋
+                            </h1>
+                            <p class="dash-subtitle">Personal Expense Tracker — Keep your income, expenses, and savings balanced.</p>
+                        </div>
+                        <div class="dash-welcome-actions">
+                            <button class="btn-dash-primary" id="btnOpenTxModal" title="Add a new income or expense transaction">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span>Add Transaction</span>
+                            </button>
+                            <button class="btn-dash-secondary" id="btnOpenDepositModal" title="Deposit money into wallet">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                <span>Deposit</span>
+                            </button>
+                            <button class="btn-dash-secondary" id="btnExportReport" title="Export statement as CSV">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Stats Cards Grid (4 KPI Cards) -->
+                    <div class="stats-cards-grid">
+                        <!-- 1. Current Balance Card -->
+                        <div class="stat-card stat-card-balance">
+                            <div class="stat-card-top">
+                                <span class="stat-label">Current Balance</span>
+                                <span class="stat-badge-trend positive" id="balanceStatusBadge">Active</span>
+                            </div>
+                            <div class="stat-value" id="dashTotalBalance">$0.00</div>
+                            <div class="stat-card-footer">
+                                <span class="stat-sub">Updated just now</span>
+                                <div class="stat-mini-btns">
+                                    <button class="btn-quick-add" id="btnQuickAddDeposit" title="Deposit Money">+ Deposit</button>
+                                    <button class="btn-quick-withdraw" id="btnQuickWithdraw" title="Withdraw Money">- Withdraw</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Total Income Card -->
+                        <div class="stat-card">
+                            <div class="stat-card-top">
+                                <span class="stat-label">Total Income</span>
+                                <div class="stat-icon-wrap stat-icon-income">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                </div>
+                            </div>
+                            <div class="stat-value stat-val-income" id="dashTotalIncome">+$0.00</div>
+                            <div class="stat-card-footer">
+                                <span class="stat-sub" id="incomeCountSub">0 income transactions</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Total Expenses Card -->
+                        <div class="stat-card">
+                            <div class="stat-card-top">
+                                <span class="stat-label">Total Expenses</span>
+                                <div class="stat-icon-wrap stat-icon-expense">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                                </div>
+                            </div>
+                            <div class="stat-value stat-val-expense" id="dashTotalExpense">-$0.00</div>
+                            <div class="stat-card-footer">
+                                <span class="stat-sub" id="expenseCountSub">0 expense transactions</span>
+                            </div>
+                        </div>
+
+                        <!-- 4. Savings Rate Card -->
+                        <div class="stat-card">
+                            <div class="stat-card-top">
+                                <span class="stat-label">Savings Rate</span>
+                                <span class="stat-badge-pct" id="dashSavingsPct">0%</span>
+                            </div>
+                            <div class="stat-value" id="dashSavingsTarget">$0.00</div>
+                            <div class="stat-card-footer">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" id="dashSavingsBar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart.js Row (Income vs Expense Bar Chart + Category Doughnut) -->
+                    <div class="charts-overview-row">
+                        <!-- Bar Chart -->
+                        <div class="dash-panel chart-panel-bar">
+                            <div class="panel-header">
+                                <div>
+                                    <h3 class="panel-title">Income vs Expenses Overview</h3>
+                                    <span class="panel-badge-sub">Monthly Cash Flow Comparison</span>
+                                </div>
+                            </div>
+                            <div class="canvas-chart-wrapper">
+                                <canvas id="chartIncomeExpense" height="230"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Doughnut Chart -->
+                        <div class="dash-panel chart-panel-donut">
+                            <div class="panel-header">
+                                <div>
+                                    <h3 class="panel-title">Expense by Category</h3>
+                                    <span class="panel-badge-sub">Category Breakdown</span>
+                                </div>
+                            </div>
+                            <div class="canvas-chart-wrapper donut-wrapper">
+                                <canvas id="chartCategoryDonut" height="230"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions Section in Dashboard -->
+                    <div class="dash-panel panel-transactions">
+                        <div class="panel-header">
+                            <div class="panel-title-group">
+                                <h3 class="panel-title">Recent Transactions</h3>
+                                <span class="panel-badge-count" id="recentTxCountBadge">0 items</span>
+                            </div>
+                            <div class="panel-header-actions">
+                                <div class="tx-filter-tabs" id="recentFilterTabs">
+                                    <button class="filter-tab active" data-filter="all">All</button>
+                                    <button class="filter-tab" data-filter="expense">Expense</button>
+                                    <button class="filter-tab" data-filter="income">Income</button>
+                                </div>
+                                <button class="btn-link-action" id="btnViewAllTxLink">View All &rarr;</button>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-container">
+                            <table class="tx-table" id="recentTxTable">
+                                <thead>
+                                    <tr>
+                                        <th>Title & Details</th>
+                                        <th>Category</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTxTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                            <!-- Empty State for Recent Transactions -->
+                            <div class="empty-state-card" id="emptyStateRecent">
+                                <div class="empty-icon">💸</div>
+                                <h4 class="empty-title">No transactions yet</h4>
+                                <p class="empty-sub">Add your first income or expense transaction to see it here!</p>
+                                <button class="btn-dash-primary btn-empty-add" onclick="document.getElementById('btnOpenTxModal').click();">
+                                    <span>+ Add First Transaction</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 2: TRANSACTIONS MANAGEMENT
+                     ======================================================== -->
+                <div class="app-view" id="viewTransactions">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Transaction History</h1>
+                            <p class="dash-subtitle">Manage, search, filter, edit and export all your financial transactions.</p>
+                        </div>
+                        <button class="btn-dash-primary" onclick="document.getElementById('btnOpenTxModal').click();">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Add Transaction</span>
+                        </button>
+                    </div>
+
+                    <!-- Toolbar: Search + Category Filter + Type Filter + Sort -->
+                    <div class="tx-toolbar-card">
+                        <div class="toolbar-search-wrap">
+                            <span class="toolbar-search-icon">🔍</span>
+                            <input type="text" id="txFullSearchInput" class="toolbar-search-input" placeholder="Search by title, merchant or note...">
+                        </div>
+                        <div class="toolbar-controls-grid">
+                            <!-- Type Filter -->
+                            <div class="tx-filter-tabs" id="fullTxFilterTabs">
+                                <button class="filter-tab active" data-filter="all">All</button>
+                                <button class="filter-tab" data-filter="income">Income</button>
+                                <button class="filter-tab" data-filter="expense">Expense</button>
+                            </div>
+                            <!-- Category Filter Dropdown -->
+                            <select id="txCategorySelectFilter" class="toolbar-select">
+                                <option value="all">All Categories</option>
+                                <option value="Food & Dining">Food & Dining</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Housing & Utilities">Housing & Utilities</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Investment">Investment</option>
+                                <option value="Health">Health</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <!-- Date Sorting -->
+                            <select id="txSortSelect" class="toolbar-select">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="amount-desc">Highest Amount</option>
+                                <option value="amount-asc">Lowest Amount</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Full Transactions Table -->
+                    <div class="dash-panel">
+                        <div class="table-container">
+                            <table class="tx-table" id="fullTxTable">
+                                <thead>
+                                    <tr>
+                                        <th>Title & Details</th>
+                                        <th>Category</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fullTxTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                            <div class="empty-state-card" id="emptyStateFull">
+                                <div class="empty-icon">📋</div>
+                                <h4 class="empty-title">No transactions found</h4>
+                                <p class="empty-sub">Try adjusting your filters or search terms, or add a new transaction.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 3: ANALYTICS & REPORTS
+                     ======================================================== -->
+                <div class="app-view" id="viewAnalytics">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Financial Analytics & Reports</h1>
+                            <p class="dash-subtitle">Visualize your spending trends, category distributions, and monthly cash flow.</p>
+                        </div>
+                    </div>
+
+                    <!-- 4 Analytics Metric Cards -->
+                    <div class="stats-cards-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Highest Expense</span>
+                            <div class="stat-value stat-val-expense" id="statHighestExpense">$0.00</div>
+                            <span class="stat-sub" id="statHighestExpenseName">No expenses recorded</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Average Transaction</span>
+                            <div class="stat-value" id="statAvgSpend">$0.00</div>
+                            <span class="stat-sub">Across all records</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Top Spending Category</span>
+                            <div class="stat-value" id="statTopCategory">-</div>
+                            <span class="stat-sub" id="statTopCategoryAmt">$0.00 spent</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Net Profit / Savings</span>
+                            <div class="stat-value stat-val-income" id="statNetSavings">$0.00</div>
+                            <span class="stat-sub">Income minus Expenses</span>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Charts -->
+                    <div class="charts-overview-row">
+                        <div class="dash-panel chart-panel-bar">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Cumulative Cash Flow Trend</h3>
+                            </div>
+                            <div class="canvas-chart-wrapper">
+                                <canvas id="chartAnalyticsTrend" height="240"></canvas>
+                            </div>
+                        </div>
+                        <div class="dash-panel chart-panel-donut">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Category Distribution</h3>
+                            </div>
+                            <div class="canvas-chart-wrapper donut-wrapper">
+                                <canvas id="chartAnalyticsDonut" height="240"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Breakdown Table -->
+                    <div class="dash-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Category Spending Breakdown</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="tx-table" id="analyticsCategoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Transactions</th>
+                                        <th>Total Spent</th>
+                                        <th>% of Total Expenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analyticsCategoryBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 4: BUDGET PLANNER
+                     ======================================================== -->
+                <div class="app-view" id="viewBudget">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Monthly Category Budget Planner</h1>
+                            <p class="dash-subtitle">Set spending limits on categories and track your real-time budget health.</p>
+                        </div>
+                        <button class="btn-dash-primary" id="btnOpenSetBudgetModal">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Set Category Budget</span>
+                        </button>
+                    </div>
+
+                    <!-- Budget Cards Grid -->
+                    <div class="budget-cards-grid" id="budgetCardsGrid">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 5: CARDS & TRANSFERS
+                     ======================================================== -->
+                <div class="app-view" id="viewCards">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Virtual Cards & Wallet Transfers</h1>
+                            <p class="dash-subtitle">Manage your virtual payment card, deposit money, and withdraw funds.</p>
+                        </div>
+                    </div>
+
+                    <div class="cards-transfers-grid">
+                        <!-- Left: 3D Virtual Card -->
+                        <div class="virtual-card-showcase">
+                            <div class="vc-card-mesh">
+                                <div class="vc-top-row">
+                                    <span class="vc-chip-gold"></span>
+                                    <span class="vc-brand-logo">VISA PLATINUM</span>
+                                </div>
+                                <div class="vc-balance-display">
+                                    <span class="vc-bal-label">TOTAL WALLET BALANCE</span>
+                                    <div class="vc-bal-amount" id="vcTotalBalance">$0.00</div>
+                                </div>
+                                <div class="vc-card-number">•••• •••• •••• 8429</div>
+                                <div class="vc-bottom-row">
+                                    <div>
+                                        <span class="vc-sub-lbl">CARD HOLDER</span>
+                                        <div class="vc-sub-name">{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}Felix Vance{% endif %}</div>
+                                    </div>
+                                    <div>
+                                        <span class="vc-sub-lbl">EXPIRES</span>
+                                        <div class="vc-sub-exp">08/29</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="vc-action-buttons-grid">
+                                <button class="btn-vc-action deposit" onclick="document.getElementById('btnOpenDepositModal').click();">
+                                    <span>💰 Deposit Funds</span>
+                                </button>
+                                <button class="btn-vc-action withdraw" onclick="document.getElementById('btnOpenWithdrawModal').click();">
+                                    <span>🏧 Withdraw Money</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Quick Transfer Form -->
+                        <div class="dash-panel panel-quick-transfer">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Quick Transfer Simulation</h3>
+                            </div>
+                            <form id="quickTransferForm" class="dash-modal-form">
+                                <div class="dash-form-group">
+                                    <label class="dash-input-label">Recipient Account / Email</label>
+                                    <input type="text" id="transferRecipient" class="dash-form-input" placeholder="e.g. john@example.com or @alex" required>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label class="dash-input-label">Amount ($)</label>
+                                    <div class="dash-input-wrap">
+                                        <span class="dash-input-currency">$</span>
+                                        <input type="number" id="transferAmount" class="dash-form-input" min="1" step="any" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                <div class="dash-form-group">
+                                    <label class="dash-input-label">Transfer Note (Optional)</label>
+                                    <input type="text" id="transferNote" class="dash-form-input" placeholder="e.g. Dinner split, Rent share">
+                                </div>
+                                <button type="submit" class="btn-dash-submit">
+                                    <span>Send Money Now</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 6: INVOICES & UPCOMING BILLS
+                     ======================================================== -->
+                <div class="app-view" id="viewInvoices">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Recurring Invoices & Bills</h1>
+                            <p class="dash-subtitle">Track your upcoming bills and pay them instantly to update your expense log.</p>
+                        </div>
+                        <button class="btn-dash-primary" id="btnOpenAddBillModal">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Add Recurring Bill</span>
+                        </button>
+                    </div>
+
+                    <div class="bills-grid" id="billsListContainer">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     VIEW 7: SAVINGS MILESTONES & REWARDS
+                     ======================================================== -->
+                <div class="app-view" id="viewRewards">
+                    <div class="dash-welcome-row">
+                        <div>
+                            <h1 class="dash-title">Savings Milestones & Health Badges</h1>
+                            <p class="dash-subtitle">Track your financial habits and unlock badges as you manage your money.</p>
+                        </div>
+                    </div>
+
+                    <div class="rewards-badges-grid" id="rewardsBadgesGrid">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+    </div>
+
+    <!-- ============================================================
+         MODAL 1: Unified Add & Edit Transaction (Full Requirement)
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="transactionModal">
+        <div class="dash-modal-card">
+            <button class="dash-modal-close" id="closeTxModalBtn" aria-label="Close modal">&times;</button>
+            <div class="dash-modal-header">
+                <div class="dash-modal-icon icon-expense" id="txModalIcon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </div>
+                <h3 class="dash-modal-title" id="txModalTitle">Add Transaction</h3>
+                <p class="dash-modal-sub" id="txModalSub">Record a new income or expense transaction.</p>
+            </div>
+
+            <form id="transactionForm" class="dash-modal-form">
+                <input type="hidden" id="txEditId" value="">
+
+                <!-- Type Selector (Income vs Expense) -->
+                <div class="tx-type-toggle-row">
+                    <button type="button" class="btn-type-toggle active expense" id="btnTypeExpense" data-type="expense">
+                        <span class="toggle-dot"></span>
+                        <span>Expense</span>
+                    </button>
+                    <button type="button" class="btn-type-toggle income" id="btnTypeIncome" data-type="income">
+                        <span class="toggle-dot"></span>
+                        <span>Income</span>
+                    </button>
+                </div>
+
+                <!-- Title Field -->
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="txTitleInput">Transaction Title *</label>
+                    <input type="text" id="txTitleInput" class="dash-form-input" placeholder="e.g. Grocery shopping, Monthly salary, Coffee" required>
+                    <span class="input-error-msg" id="txTitleError"></span>
+                </div>
+
+                <!-- Amount & Date Row -->
+                <div class="dash-form-row">
+                    <div class="dash-form-group">
+                        <label class="dash-input-label" for="txAmountInput">Amount ($) *</label>
+                        <div class="dash-input-wrap">
+                            <span class="dash-input-currency">$</span>
+                            <input type="number" id="txAmountInput" class="dash-form-input" min="0.01" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <span class="input-error-msg" id="txAmountError"></span>
+                    </div>
+
+                    <div class="dash-form-group">
+                        <label class="dash-input-label" for="txDateInput">Date *</label>
+                        <input type="date" id="txDateInput" class="dash-form-input" required>
+                        <span class="input-error-msg" id="txDateError"></span>
+                    </div>
+                </div>
+
+                <!-- Category Field -->
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="txCategoryInput">Category *</label>
+                    <select id="txCategoryInput" class="dash-form-select" required>
+                        <!-- Options dynamically updated based on type -->
+                    </select>
+                </div>
+
+                <!-- Merchant / Note Field -->
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="txMerchantInput">Merchant / Source / Note (Optional)</label>
+                    <input type="text" id="txMerchantInput" class="dash-form-input" placeholder="e.g. Walmart, Upwork, Starbucks">
+                </div>
+
+                <button type="submit" class="btn-dash-submit" id="txSubmitBtn">
+                    <span>Add Transaction</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 2: Delete Confirmation Dialog (Bonus Challenge)
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="deleteConfirmModal">
+        <div class="dash-modal-card modal-confirm-card">
+            <div class="confirm-icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <h3 class="dash-modal-title">Delete Transaction?</h3>
+            <p class="dash-modal-sub" id="deleteConfirmText">Are you sure you want to delete this transaction? This action will update your balance and cannot be undone.</p>
+            <div class="confirm-actions-row">
+                <button type="button" class="btn-confirm-cancel" id="btnCancelDelete">Cancel</button>
+                <button type="button" class="btn-confirm-delete" id="btnConfirmDelete">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 3: Deposit Funds Modal
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="addMoneyModal">
+        <div class="dash-modal-card">
+            <button class="dash-modal-close" id="closeAddMoneyBtn" aria-label="Close modal">&times;</button>
+            <div class="dash-modal-header">
+                <div class="dash-modal-icon icon-deposit">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </div>
+                <h3 class="dash-modal-title">Deposit Money</h3>
+                <p class="dash-modal-sub">Add funds to your Personal Expense Tracker balance instantly.</p>
+            </div>
+            <form id="addMoneyForm" class="dash-modal-form">
+                <div class="amount-presets-grid">
+                    <button type="button" class="preset-chip" data-amount="25">+$25</button>
+                    <button type="button" class="preset-chip active" data-amount="50">+$50</button>
+                    <button type="button" class="preset-chip" data-amount="100">+$100</button>
+                    <button type="button" class="preset-chip" data-amount="250">+$250</button>
+                    <button type="button" class="preset-chip" data-amount="500">+$500</button>
+                </div>
+
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="customDepositAmount">Deposit Amount ($) *</label>
+                    <div class="dash-input-wrap">
+                        <span class="dash-input-currency">$</span>
+                        <input type="number" id="customDepositAmount" class="dash-form-input" min="1" step="any" value="50.00" required>
+                    </div>
+                </div>
+
+                <div class="dash-form-group">
+                    <label class="dash-input-label">Select Payment Method</label>
+                    <div class="payment-methods-grid">
+                        <label class="payment-method-item active">
+                            <input type="radio" name="payMethod" value="Visa •• 8429" checked>
+                            <span class="method-name">💳 Visa Platinum •• 8429</span>
+                        </label>
+                        <label class="payment-method-item">
+                            <input type="radio" name="payMethod" value="PayPal">
+                            <span class="method-name">🅿️ PayPal Wallet</span>
+                        </label>
+                        <label class="payment-method-item">
+                            <input type="radio" name="payMethod" value="Bank Wire">
+                            <span class="method-name">🏦 Bank Transfer</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-dash-submit">
+                    <span>Confirm Deposit</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 4: Withdraw Funds Modal
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="withdrawMoneyModal">
+        <div class="dash-modal-card">
+            <button class="dash-modal-close" id="closeWithdrawBtn" aria-label="Close modal">&times;</button>
+            <div class="dash-modal-header">
+                <div class="dash-modal-icon icon-expense">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="9"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </div>
+                <h3 class="dash-modal-title">Withdraw Funds</h3>
+                <p class="dash-modal-sub">Transfer money out from your Personal Expense Tracker balance.</p>
+            </div>
+            <form id="withdrawMoneyForm" class="dash-modal-form">
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="withdrawAmountInput">Withdraw Amount ($) *</label>
+                    <div class="dash-input-wrap">
+                        <span class="dash-input-currency">$</span>
+                        <input type="number" id="withdrawAmountInput" class="dash-form-input" min="1" step="any" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="dash-form-group">
+                    <label class="dash-input-label">Withdraw Destination</label>
+                    <select id="withdrawDestinationSelect" class="dash-form-select">
+                        <option value="Primary Checking Bank">🏦 Primary Checking Bank Account (•••• 9201)</option>
+                        <option value="PayPal Express">🅿️ PayPal Express Wallet</option>
+                        <option value="Cash / ATM">💵 Cash / ATM Withdrawal</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-dash-submit btn-danger-submit">
+                    <span>Confirm Withdrawal</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 5: Set Category Budget Modal
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="setBudgetModal">
+        <div class="dash-modal-card">
+            <button class="dash-modal-close" id="closeBudgetModalBtn" aria-label="Close modal">&times;</button>
+            <div class="dash-modal-header">
+                <div class="dash-modal-icon icon-deposit">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </div>
+                <h3 class="dash-modal-title">Set Category Budget</h3>
+                <p class="dash-modal-sub">Set monthly spending limit for a specific category.</p>
+            </div>
+            <form id="setBudgetForm" class="dash-modal-form">
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="budgetCategorySelect">Category</label>
+                    <select id="budgetCategorySelect" class="dash-form-select">
+                        <option value="Food & Dining">🍔 Food & Dining</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Transportation">🚗 Transportation</option>
+                        <option value="Housing & Utilities">⚡ Housing & Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Health">💊 Health & Fitness</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="budgetLimitInput">Monthly Limit ($) *</label>
+                    <div class="dash-input-wrap">
+                        <span class="dash-input-currency">$</span>
+                        <input type="number" id="budgetLimitInput" class="dash-form-input" min="10" step="any" placeholder="e.g. 500" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-dash-submit">
+                    <span>Save Budget Limit</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 6: Add Recurring Bill Modal
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="addBillModal">
+        <div class="dash-modal-card">
+            <button class="dash-modal-close" id="closeAddBillBtn" aria-label="Close modal">&times;</button>
+            <div class="dash-modal-header">
+                <div class="dash-modal-icon icon-expense">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                </div>
+                <h3 class="dash-modal-title">Add Recurring Bill</h3>
+                <p class="dash-modal-sub">Track upcoming bills so you never miss a payment.</p>
+            </div>
+            <form id="addBillForm" class="dash-modal-form">
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="billNameInput">Bill Name *</label>
+                    <input type="text" id="billNameInput" class="dash-form-input" placeholder="e.g. Netflix, Electricity, Rent" required>
+                </div>
+                <div class="dash-form-row">
+                    <div class="dash-form-group">
+                        <label class="dash-input-label" for="billAmountInput">Amount ($) *</label>
+                        <div class="dash-input-wrap">
+                            <span class="dash-input-currency">$</span>
+                            <input type="number" id="billAmountInput" class="dash-form-input" min="1" step="any" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-input-label" for="billDueDateInput">Due Date *</label>
+                        <input type="date" id="billDueDateInput" class="dash-form-input" required>
+                    </div>
+                </div>
+                <div class="dash-form-group">
+                    <label class="dash-input-label" for="billCategorySelect">Category</label>
+                    <select id="billCategorySelect" class="dash-form-select">
+                        <option value="Housing & Utilities">⚡ Housing & Utilities</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Food & Dining">🍔 Food & Dining</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-dash-submit">
+                    <span>Save Bill</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 7: Upgrade to Pro Modal
+         ============================================================ -->
+    <div class="dash-modal-overlay" id="proUpgradeModal">
+        <div class="dash-modal-card pro-card-modal">
+            <button class="dash-modal-close" id="closeProModalBtn" aria-label="Close modal">&times;</button>
+            <div class="pro-modal-hero">
+                <div class="pro-crown-big">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM19 19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V18H19V19Z"/>
+                    </svg>
+                </div>
+                <h3 class="dash-modal-title">Upgrade to Pro</h3>
+                <p class="dash-modal-sub">Unlock intelligent financial automation and unlimited tracking capabilities.</p>
+            </div>
+
+            <div class="pro-features-list">
+                <div class="pro-feat-item">
+                    <span class="pro-feat-icon">✓</span>
+                    <span><strong>Unlimited Accounts & Cards:</strong> Connect multiple bank wallets seamlessly.</span>
+                </div>
+                <div class="pro-feat-item">
+                    <span class="pro-feat-icon">✓</span>
+                    <span><strong>AI Budget Forecast:</strong> Get automatic spending predictions before end of month.</span>
+                </div>
+                <div class="pro-feat-item">
+                    <span class="pro-feat-icon">✓</span>
+                    <span><strong>Custom Export Reports:</strong> Download Excel, CSV, and PDF statements anytime.</span>
+                </div>
+                <div class="pro-feat-item">
+                    <span class="pro-feat-icon">✓</span>
+                    <span><strong>24/7 Priority Support:</strong> VIP helpdesk and instant issue resolution.</span>
+                </div>
+            </div>
+
+            <div class="pro-pricing-box">
+                <div class="pro-price-amount"><strong>$9.99</strong> / month</div>
+                <div class="pro-price-trial">Cancel anytime. 14-day free trial included.</div>
+            </div>
+
+            <button type="button" class="btn-dash-submit btn-pro-upgrade" id="btnStartTrial">
+                <span>Start 14-Day Free Trial</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container for Dashboard -->
+    <div class="dash-toast-container" id="dashToastContainer"></div>
+
+    <!-- Pass Django User State to JavaScript -->
+    <script>
+        window.CURRENT_USER = "{{ user.username|default:'guest' }}";
+        window.IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
+        window.USER_FULL_NAME = "{{ user.get_full_name|default:user.username|default:'Guest User' }}";
+    </script>
+
+    <!-- Static JavaScript File -->
+    <script src="{% static 'js/home.js' %}"></script>
+</body>
+</html>

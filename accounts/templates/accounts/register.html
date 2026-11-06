@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Personal Expense Tracker</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
+</head>
+<body>
+
+    <!-- Centered Compact Card Container -->
+    <div class="auth-card-container">
+
+        <!-- ============================================================
+             Left Side: Visual Showcase Panel with 3 Dynamic Scenes
+             ============================================================ -->
+        <div class="auth-showcase-panel">
+            <!-- Brand Logo -->
+            <a href="{% url 'home' %}" class="showcase-brand" title="Personal Expense Tracker">
+                <div class="brand-circle-mark"></div>
+                <span class="brand-title">Expense<span>Tracker</span></span>
+            </a>
+
+            <!-- Multi-Scene Container (Changes visual cards on slide change!) -->
+            <div class="showcase-cards-container">
+
+                <!-- --------------------------------------------------------
+                     SCENE 1: Balance & 34% Food Donut Chart
+                     -------------------------------------------------------- -->
+                <div class="showcase-scene active" id="scene-0">
+                    <div class="float-card-balance">
+                        <div class="card-icon-wallet">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="3"></rect>
+                                <circle cx="16" cy="12" r="2"></circle>
+                            </svg>
+                        </div>
+                        <div class="card-label-small">Current Balance</div>
+                        <div class="card-amount-large">$ 24,359</div>
+                    </div>
+
+                    <div class="float-card-transaction">
+                        <div class="btn-circle-plus">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div class="card-title-strong">New transaction</div>
+                        <div class="card-subtitle-muted">or upload .csv / .xls file</div>
+                    </div>
+
+                    <div class="float-card-chart">
+                        <div class="chart-visual-wrapper">
+                            <svg width="140" height="140" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#F1F5F9" stroke-width="14"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#1E6BFF" stroke-width="14"
+                                        stroke-dasharray="81 239" stroke-dashoffset="25"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#F97316" stroke-width="14"
+                                        stroke-dasharray="60 239" stroke-dashoffset="-56"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#10B981" stroke-width="14"
+                                        stroke-dasharray="55 239" stroke-dashoffset="-116"></circle>
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="#EF4444" stroke-width="14"
+                                        stroke-dasharray="43 239" stroke-dashoffset="-171"></circle>
+                            </svg>
+                            <div class="chart-inner-text">
+                                <div class="chart-percentage">34%</div>
+                                <div class="chart-category">Food</div>
+                            </div>
+                            <div class="chart-pointer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0B132B">
+                                    <path d="M3 3l7 18 3-7 7-3L3 3z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- --------------------------------------------------------
+                     SCENE 2: Weekly Spending Bar Chart & Savings Target
+                     -------------------------------------------------------- -->
+                <div class="showcase-scene" id="scene-1">
+                    <div class="float-card-weekly">
+                        <div class="weekly-header">
+                            <div>
+                                <div class="card-label-small">Weekly Spending</div>
+                                <div class="weekly-total">$ 1,420.50</div>
+                            </div>
+                            <span class="trend-badge-up">+12% vs last week</span>
+                        </div>
+                        <div class="bar-chart-visual">
+                            <div class="bar-col"><div class="bar-fill" style="height: 40px;"></div><span>M</span></div>
+                            <div class="bar-col"><div class="bar-fill" style="height: 55px;"></div><span>T</span></div>
+                            <div class="bar-col"><div class="bar-fill" style="height: 30px;"></div><span>W</span></div>
+                            <div class="bar-col"><div class="bar-fill active-bar" style="height: 70px;"></div><span>T</span></div>
+                            <div class="bar-col"><div class="bar-fill" style="height: 48px;"></div><span>F</span></div>
+                            <div class="bar-col"><div class="bar-fill" style="height: 62px;"></div><span>S</span></div>
+                            <div class="bar-col"><div class="bar-fill" style="height: 35px;"></div><span>S</span></div>
+                        </div>
+                    </div>
+
+                    <div class="float-card-goal">
+                        <div class="goal-ring-wrapper">
+                            <svg width="48" height="48" viewBox="0 0 36 36">
+                                <circle cx="18" cy="18" r="14" fill="none" stroke="#F1F5F9" stroke-width="3.5"></circle>
+                                <circle cx="18" cy="18" r="14" fill="none" stroke="#10B981" stroke-width="3.5"
+                                        stroke-dasharray="72 100" stroke-linecap="round" transform="rotate(-90 18 18)"></circle>
+                            </svg>
+                            <span class="goal-pct-text">82%</span>
+                        </div>
+                        <div>
+                            <div class="goal-title">Savings Target</div>
+                            <div class="goal-sub">$4,100 / $5,000 Saved</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- --------------------------------------------------------
+                     SCENE 3: Virtual Debit Card & Recent Activity Feed
+                     -------------------------------------------------------- -->
+                <div class="showcase-scene" id="scene-2">
+                    <div class="float-card-virtual">
+                        <div class="vc-top">
+                            <span class="vc-chip"></span>
+                            <span class="vc-brand">VISA</span>
+                        </div>
+                        <div class="vc-number">•••• •••• •••• 8429</div>
+                        <div class="vc-bottom">
+                            <div>
+                                <span class="vc-label">CARD HOLDER</span>
+                                <div class="vc-val">Sarah Jenkins</div>
+                            </div>
+                            <div>
+                                <span class="vc-label">EXPIRES</span>
+                                <div class="vc-val">08/29</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="float-card-activity">
+                        <div class="act-title">Recent Activity</div>
+                        <div class="act-list">
+                            <div class="act-item">
+                                <div class="act-left">
+                                    <span class="act-icon netflix">🎬</span>
+                                    <div>
+                                        <div class="act-name">Netflix Subscription</div>
+                                        <div class="act-time">Today, 2:40 PM</div>
+                                    </div>
+                                </div>
+                                <span class="act-amt minus">-$15.99</span>
+                            </div>
+                            <div class="act-item">
+                                <div class="act-left">
+                                    <span class="act-icon salary">💰</span>
+                                    <div>
+                                        <div class="act-name">Monthly Salary</div>
+                                        <div class="act-time">Yesterday</div>
+                                    </div>
+                                </div>
+                                <span class="act-amt plus">+$3,250.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Caption & Dynamic Carousel -->
+            <div class="showcase-footer-caption">
+                <h2 class="caption-title" id="captionTitle">Start fresh today!</h2>
+                <p class="caption-subtitle" id="captionSubtitle">
+                    Join thousands of users tracking expenses, saving smart, and making better financial decisions every day.
+                </p>
+                <div class="carousel-controls">
+                    <button class="carousel-arrow" id="carouselPrevBtn" aria-label="Previous Slide">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <div class="carousel-dots">
+                        <span class="dot active" data-slide="0"></span>
+                        <span class="dot" data-slide="1"></span>
+                        <span class="dot" data-slide="2"></span>
+                    </div>
+                    <button class="carousel-arrow" id="carouselNextBtn" aria-label="Next Slide">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             Right Side: Register Form
+             ============================================================ -->
+        <div class="auth-form-panel">
+            <div class="auth-form-content">
+                <!-- Header Box -->
+                <div class="form-header-box">
+                    <h1 class="form-title">Create your account</h1>
+                    <p class="form-subtitle">Start managing your finance faster and better</p>
+                </div>
+
+                <!-- Messages / Alerts -->
+                {% if messages %}
+                <div class="alert-messages">
+                    {% for message in messages %}
+                    <div class="alert-item {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Registration Form -->
+                <form method="POST" action="{% url 'register' %}" enctype="multipart/form-data" class="auth-form">
+                    {% csrf_token %}
+
+                    <!-- Full Name Row (First & Last) -->
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <div class="input-icon-wrapper">
+                                <span class="field-icon-left">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                </span>
+                                {{ form.first_name }}
+                            </div>
+                            {% if form.first_name.errors %}
+                            <div class="field-error-text">{{ form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-icon-wrapper">
+                                <span class="field-icon-left">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                </span>
+                                {{ form.last_name }}
+                            </div>
+                            {% if form.last_name.errors %}
+                            <div class="field-error-text">{{ form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <div class="input-icon-wrapper">
+                            <span class="field-icon-left">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                            </span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                        <div class="field-error-text">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <div class="input-icon-wrapper">
+                            <span class="field-icon-left">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            </span>
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                        <div class="field-error-text">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Row with Show/Hide Eye -->
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <div class="input-icon-wrapper">
+                                <span class="field-icon-left">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </span>
+                                {{ form.password }}
+                                <button type="button" class="btn-password-toggle" aria-label="Toggle password visibility">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                            <div class="field-error-text">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-icon-wrapper">
+                                <span class="field-icon-left">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </span>
+                                {{ form.confirm_password }}
+                                <button type="button" class="btn-password-toggle" aria-label="Toggle password visibility">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                            </div>
+                            {% if form.confirm_password.errors %}
+                            <div class="field-error-text">{{ form.confirm_password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Optional Profile Avatar Upload -->
+                    <div class="file-upload-box">
+                        <label class="file-upload-label">Profile Avatar (Optional)</label>
+                        {{ form.avatar }}
+                        {% if form.avatar.errors %}
+                        <div class="field-error-text">{{ form.avatar.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-submit-primary">
+                        <span>Create Account</span>
+                    </button>
+
+                    <!-- Switch to Login -->
+                    <div class="auth-switch-footer">
+                        <span>Already have an account?</span>
+                        <a href="{% url 'login' %}" class="auth-switch-link">Log In</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="auth-copyright">
+                &copy; 2026 Personal Expense Tracker. All rights reserved.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript File -->
+    <script src="{% static 'accounts/js/auth.js' %}"></script>
+</body>
+</html>
