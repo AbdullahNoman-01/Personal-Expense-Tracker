@@ -94,6 +94,14 @@
                             </svg>
                             Standard Member
                         </span>
+                        {% if profile.avatar_data %}
+                        <div style="margin-top: 6px;">
+                            <button type="button" class="btn-remove-photo" id="btnRemovePhoto" title="Remove custom photo and use default avatar">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                <span>Reset to Default Avatar</span>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -135,62 +143,139 @@
 
     </div>
 
-    <!-- Live Avatar Preview & Client-side Auto-compression Script -->
+    <!-- Live Avatar Preview & Client-side Auto-compression Script (100% iPhone & Vercel Safe) -->
     <script>
         const avatarInput = document.getElementById('id_avatar');
         const avatarPreview = document.getElementById('avatarPreview');
         const avatarDataInput = document.getElementById('avatarDataInput');
+        const profileForm = document.querySelector('.profile-form');
+        const btnSave = document.querySelector('.btn-save-profile');
+        const btnRemovePhoto = document.getElementById('btnRemovePhoto');
+
+        // Reset to Default Avatar Handler
+        if (btnRemovePhoto && avatarDataInput) {
+            btnRemovePhoto.addEventListener('click', function () {
+                if (confirm('Are you sure you want to remove your custom photo and use the default avatar?')) {
+                    avatarDataInput.value = 'RESET';
+                    if (avatarInput) avatarInput.value = '';
+                    if (profileForm) profileForm.submit();
+                }
+            });
+        }
 
         if (avatarInput && avatarPreview) {
             avatarInput.classList.add('avatar-input-hidden');
-            avatarInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
+
+            function compressAndPreviewImage(file) {
                 if (!file) return;
 
-                // Validate image file type
-                if (!file.type.match(/^image\//i)) {
-                    alert('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
-                    return;
+                // Indicate optimizing state on the save button
+                if (btnSave) {
+                    btnSave.disabled = true;
+                    btnSave.dataset.originalText = btnSave.innerHTML;
+                    btnSave.innerHTML = '<span>Optimizing photo...</span>';
                 }
 
-                const reader = new FileReader();
-                reader.onload = function (evt) {
-                    const img = new Image();
-                    img.onload = function () {
-                        // High quality client-side resize to max 300x300 for optimal fast upload on Vercel
-                        const maxDim = 300;
-                        let width = img.width;
-                        let height = img.height;
+                // Use URL.createObjectURL for near-zero memory footprint on iOS Safari
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
 
-                        if (width > height) {
-                            if (width > maxDim) {
-                                height = Math.round((height * maxDim) / width);
-                                width = maxDim;
-                            }
-                        } else {
-                            if (height > maxDim) {
-                                width = Math.round((width * maxDim) / height);
-                                height = maxDim;
-                            }
+                img.onload = function () {
+                    URL.revokeObjectURL(objectUrl);
+
+                    // High quality resize to max 320x320
+                    // This downscales 15MB-20MB iPhone camera photos down to a ~25KB JPEG!
+                    const maxDim = 320;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
                         }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // Compress to lightweight JPEG data URI (~20KB)
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                        avatarPreview.src = compressedDataUrl;
-                        if (avatarDataInput) {
-                            avatarDataInput.value = compressedDataUrl;
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
                         }
-                    };
-                    img.src = evt.target.result;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to lightweight JPEG Data URI (~20KB - 35KB)
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    avatarPreview.src = compressedDataUrl;
+
+                    if (avatarDataInput) {
+                        avatarDataInput.value = compressedDataUrl;
+                    }
+
+                    // CRITICAL FOR VERCEL: Clear the raw 15MB file so the browser
+                    // will NOT send a huge multi-megabyte payload in the HTTP request!
+                    avatarInput.value = '';
+
+                    if (btnSave) {
+                        btnSave.disabled = false;
+                        btnSave.innerHTML = btnSave.dataset.originalText || 'Save Changes';
+                    }
                 };
-                reader.readAsDataURL(file);
+
+                img.onerror = function () {
+                    URL.revokeObjectURL(objectUrl);
+                    console.warn('Image decode with createObjectURL failed, trying FileReader fallback...');
+                    const reader = new FileReader();
+                    reader.onload = function (evt) {
+                        const fallbackImg = new Image();
+                        fallbackImg.onload = function () {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 300;
+                            canvas.height = 300;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(fallbackImg, 0, 0, 300, 300);
+                            const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                            avatarPreview.src = compressed;
+                            if (avatarDataInput) avatarDataInput.value = compressed;
+                            avatarInput.value = '';
+                            if (btnSave) {
+                                btnSave.disabled = false;
+                                btnSave.innerHTML = btnSave.dataset.originalText || 'Save Changes';
+                            }
+                        };
+                        fallbackImg.src = evt.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                img.src = objectUrl;
+            }
+
+            avatarInput.addEventListener('change', function (e) {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                    compressAndPreviewImage(file);
+                }
             });
+
+            if (profileForm) {
+                profileForm.addEventListener('submit', function (e) {
+                    // CRITICAL FOR VERCEL & IPHONE:
+                    // If we have compressed avatar data in avatarDataInput,
+                    // disable the raw file input so the browser DOES NOT send the huge 15MB file!
+                    if (avatarDataInput && avatarDataInput.value) {
+                        avatarInput.disabled = true;
+                    }
+
+                    if (btnSave) {
+                        btnSave.disabled = true;
+                        btnSave.innerHTML = '<span>Saving Profile...</span>';
+                    }
+                });
+            }
         }
     </script>
 </body>

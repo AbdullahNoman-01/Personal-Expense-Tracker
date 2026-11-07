@@ -346,5 +346,61 @@
 
     <!-- JavaScript File -->
     <script src="{% static 'accounts/js/auth.js' %}"></script>
+
+    <!-- Client-side Avatar Compression Script (Protects Vercel from iPhone Payload Too Large) -->
+    <script>
+        const regAvatar = document.querySelector('input[type="file"][name="avatar"]') || document.getElementById('id_avatar');
+        const regDataInput = document.getElementById('avatarDataInput');
+        const regForm = document.querySelector('.auth-form');
+
+        if (regAvatar && regDataInput) {
+            regAvatar.addEventListener('change', function (e) {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = function () {
+                    URL.revokeObjectURL(objectUrl);
+                    const maxDim = 320;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    regDataInput.value = canvas.toDataURL('image/jpeg', 0.82);
+                    // Clear raw multi-megabyte file
+                    regAvatar.value = '';
+                };
+                img.onerror = function () {
+                    URL.revokeObjectURL(objectUrl);
+                };
+                img.src = objectUrl;
+            });
+
+            if (regForm) {
+                regForm.addEventListener('submit', function () {
+                    if (regDataInput && regDataInput.value) {
+                        regAvatar.disabled = true;
+                    }
+                });
+            }
+        }
+    </script>
 </body>
 </html>

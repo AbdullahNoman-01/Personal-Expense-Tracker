@@ -162,7 +162,9 @@ def profile_view(request):
                 'phone_number': profile_form.cleaned_data.get('phone_number', ''),
                 'bio': profile_form.cleaned_data.get('bio', ''),
             }
-            if avatar_uri:
+            if avatar_data_input == 'RESET':
+                update_data['avatar_data'] = ''
+            elif avatar_uri:
                 update_data['avatar_data'] = avatar_uri
 
             Profile.objects.filter(pk=profile.pk).update(**update_data)
