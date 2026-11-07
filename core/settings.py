@@ -77,19 +77,27 @@ WSGI_APPLICATION = 'core.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('ENGINE'),
-        'NAME': os.getenv('NAME'),
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT'),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+if os.getenv('ENGINE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('ENGINE'),
+            'NAME': os.getenv('NAME'),
+            'USER': os.getenv('USER'),
+            'PASSWORD': os.getenv('PASSWORD'),
+            'HOST': os.getenv('HOST'),
+            'PORT': os.getenv('PORT'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -144,4 +152,18 @@ STATICFILES_DIRS = [
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Email Configuration (Gmail SMTP & Password Reset)
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    f"Personal Expense Tracker <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "Personal Expense Tracker <noreply@expense-tracker.com>"
+)
+PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
+
 

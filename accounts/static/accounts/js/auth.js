@@ -258,13 +258,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (forgotForm) {
-            forgotForm.addEventListener('submit', (e) => {
+            forgotForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const resetEmail = document.getElementById('resetEmailInput').value;
-                if (resetEmail) {
-                    forgotModal.classList.remove('active');
-                    showToast(`A password reset link has been sent to ${resetEmail}!`, 'success');
-                    forgotForm.reset();
+                const resetEmailInput = document.getElementById('resetEmailInput');
+                const resetEmail = resetEmailInput ? resetEmailInput.value.trim() : '';
+                const submitBtn = forgotForm.querySelector('button[type="submit"]');
+
+                if (!resetEmail) {
+                    showToast('Please enter a valid email address.', 'warning');
+                    return;
+                }
+
+                // Show loading state
+                const originalText = submitBtn ? submitBtn.innerHTML : 'Send Reset Link';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span>Sending Reset Link...</span>';
+                }
+
+                try {
+                    const formData = new FormData(forgotForm);
+                    const response = await fetch(forgotForm.action || '/accounts/forgot-password/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const data = await response.json().catch(() => null);
+
+                    if (response.ok && data && data.success) {
+                        forgotModal.classList.remove('active');
+                        showToast(data.message || `Password reset link sent to ${resetEmail}!`, 'success');
+                        forgotForm.reset();
+                    } else {
+                        const errMsg = (data && data.message) ? data.message : 'Unable to send reset email. Please try again.';
+                        showToast(errMsg, 'error');
+                    }
+                } catch (err) {
+                    console.error('Password reset submit error:', err);
+                    forgotForm.submit();
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
                 }
             });
         }
