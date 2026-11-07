@@ -10,7 +10,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('accounts/', include('accounts.urls')),
-    path('favicon.ico', RedirectView.as_view(url='/static/media/favicon.ico', permanent=False)),
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=False)),
+    path('favicon.svg', RedirectView.as_view(url='/static/favicon.svg', permanent=False)),
+    path('favicon.png', RedirectView.as_view(url='/static/favicon.png', permanent=False)),
 ]
 
 # Ensure static & media files are always served reliably across Vercel & local

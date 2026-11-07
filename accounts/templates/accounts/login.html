@@ -11,10 +11,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{% static 'media/favicon.svg' %}">
-    <link rel="alternate icon" type="image/png" sizes="64x64" href="{% static 'media/favicon.png' %}">
-    <link rel="apple-touch-icon" sizes="128x128" href="{% static 'media/favicon.png' %}">
+    <!-- Favicon (Using static/favicon.svg everywhere) -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="alternate icon" type="image/png" sizes="64x64" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" sizes="128x128" href="{% static 'favicon.png' %}">
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
@@ -30,7 +30,7 @@
         <div class="auth-showcase-panel">
             <!-- Brand Logo -->
             <a href="{% url 'home' %}" class="showcase-brand" title="Personal Expense Tracker">
-                <div class="brand-circle-mark"></div>
+                <img src="{% static 'favicon.svg' %}" alt="Personal Expense Tracker Logo" width="36" height="36" style="display: block; border-radius: 10px; margin-right: 10px;">
                 <span class="brand-title">Expense<span>Tracker</span></span>
             </a>
 

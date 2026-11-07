@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Favicon (SVG for modern browsers + PNG fallback for Safari / mobile / legacy) -->
-    <link rel="icon" type="image/svg+xml" href="{% static 'media/favicon.svg' %}">
-    <link rel="alternate icon" type="image/png" sizes="64x64" href="{% static 'media/favicon.png' %}">
-    <link rel="apple-touch-icon" sizes="128x128" href="{% static 'media/favicon.png' %}">
+    <!-- Favicon (Using static/favicon.svg everywhere) -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="alternate icon" type="image/png" sizes="64x64" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" sizes="128x128" href="{% static 'favicon.png' %}">
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,14 +34,9 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-top">
                 <!-- Brand Logo -->
-                <a href="{% url 'home' %}" class="logo-container" title="SmartSpend Tracker">
+                <a href="{% url 'home' %}" class="logo-container" title="Personal Expense Tracker">
                     <div class="logo-icon">
-                        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="36" height="36" rx="10" fill="#F0F7FF"/>
-                            <path d="M12 11.5C12 9.8 13.5 8.5 15.5 8.5H22C24 8.5 25 10 25 11.8C25 14.5 22.5 15.5 20 16.2L16 17.2C13.5 18 11 19.2 11 22.2C11 24.2 12.5 25.5 15 25.5H22C24 25.5 25.5 24.2 25.5 22.5" 
-                                  stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M11 14H24" stroke="currentColor" opacity="0.6" stroke-width="2.5" stroke-linecap="round"/>
-                        </svg>
+                        <img src="{% static 'favicon.svg' %}" alt="Personal Expense Tracker Logo" width="34" height="34" style="display: block; border-radius: 10px;">
                     </div>
                     <span class="logo-text">Expense<span>Tracker</span></span>
                 </a>
