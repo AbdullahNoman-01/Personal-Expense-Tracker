@@ -17,10 +17,28 @@ from .models import Profile
 
 
 def _process_avatar_upload(avatar_file):
-    """Safely converts an uploaded image to a base64 Data URI to prevent read-only filesystem errors on Vercel."""
+    """Safely converts an uploaded image to a lightweight base64 Data URI."""
     if not avatar_file:
         return None
     try:
+        # Check if Pillow is available for high-quality compression & resizing
+        try:
+            from PIL import Image
+            import io
+            img = Image.open(avatar_file)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            # Downscale avatar to max 300x300
+            img.thumbnail((300, 300), Image.Resampling.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=85, optimize=True)
+            b64_str = base64.b64encode(buf.getvalue()).decode('utf-8')
+            return f"data:image/jpeg;base64,{b64_str}"
+        except Exception:
+            pass
+
+        # Fallback: direct base64 encoding without Pillow
+        avatar_file.seek(0)
         file_bytes = avatar_file.read()
         if not file_bytes:
             return None
@@ -45,21 +63,18 @@ def register_view(request):
             user.set_password(form.cleaned_data['password'])
             user.save()
 
-            # Ensure profile exists and handle avatar upload safely
+            # Ensure profile exists and handle avatar upload safely without touching disk
             profile, _ = Profile.objects.get_or_create(user=user)
+            avatar_data_input = request.POST.get('avatar_data')
             avatar_file = request.FILES.get('avatar') or form.cleaned_data.get('avatar')
-            if avatar_file:
+            avatar_uri = None
+            if avatar_data_input and avatar_data_input.startswith('data:image/'):
+                avatar_uri = avatar_data_input
+            elif avatar_file:
                 avatar_uri = _process_avatar_upload(avatar_file)
-                if avatar_uri:
-                    profile.avatar_data = avatar_uri
-                try:
-                    profile.avatar = avatar_file
-                    profile.save()
-                except OSError:
-                    profile.avatar = None
-                    profile.save()
-            else:
-                profile.save()
+
+            if avatar_uri:
+                Profile.objects.filter(pk=profile.pk).update(avatar_data=avatar_uri)
 
             messages.success(request, f"Account created successfully for {user.username}! You are now logged in.")
             login(request, user)
@@ -126,28 +141,31 @@ def profile_view(request):
 
     if request.method == 'POST':
         user_form = UserProfileUpdateForm(request.POST, instance=request.user)
-        # We do not pass request.FILES directly to ModelForm to prevent Django's default
-        # FileSystemStorage from trying to write to read-only /var/task/media/ on Vercel!
         profile_form = ProfileUpdateForm(request.POST, instance=profile)
 
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
-            profile_obj = profile_form.save(commit=False)
 
-            # Check if user uploaded an avatar file
+            # Handle avatar: first check if client sent compressed data URI from canvas,
+            # or fallback to file uploaded in request.FILES
+            avatar_data_input = request.POST.get('avatar_data')
             avatar_file = request.FILES.get('avatar')
-            if avatar_file:
-                avatar_uri = _process_avatar_upload(avatar_file)
-                if avatar_uri:
-                    profile_obj.avatar_data = avatar_uri
-                # Avoid file write on read-only environments
-                profile_obj.avatar = None
+            avatar_uri = None
 
-            try:
-                profile_obj.save()
-            except OSError:
-                profile_obj.avatar = None
-                profile_obj.save()
+            if avatar_data_input and avatar_data_input.startswith('data:image/'):
+                avatar_uri = avatar_data_input
+            elif avatar_file:
+                avatar_uri = _process_avatar_upload(avatar_file)
+
+            # Update profile via direct SQL UPDATE to guarantee zero filesystem writes (Vercel-safe)
+            update_data = {
+                'phone_number': profile_form.cleaned_data.get('phone_number', ''),
+                'bio': profile_form.cleaned_data.get('bio', ''),
+            }
+            if avatar_uri:
+                update_data['avatar_data'] = avatar_uri
+
+            Profile.objects.filter(pk=profile.pk).update(**update_data)
 
             messages.success(request, "Your profile has been updated successfully!")
             return redirect('profile')

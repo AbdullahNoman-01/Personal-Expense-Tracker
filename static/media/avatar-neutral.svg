@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="neutralBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </linearGradient>
+    <linearGradient id="neutralSilhouette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Circle (Empty / Blank card tone) -->
+  <circle cx="60" cy="60" r="58" fill="url(#neutralBg)" stroke="#E2E8F0" stroke-width="2.5" />
+
+  <!-- Clean Blank Silhouette Head -->
+  <circle cx="60" cy="48" r="20" fill="url(#neutralSilhouette)" />
+
+  <!-- Clean Blank Silhouette Shoulders / Body -->
+  <path d="M26 112 C28 88, 42 78, 60 78 C78 78, 92 88, 94 112 Z" fill="url(#neutralSilhouette)" />
+</svg>

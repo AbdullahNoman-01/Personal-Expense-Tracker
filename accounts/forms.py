@@ -119,12 +119,16 @@ class UserProfileUpdateForm(forms.ModelForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
+    avatar = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-file-input', 'accept': 'image/*', 'id': 'id_avatar'})
+    )
+
     class Meta:
         model = Profile
-        fields = ['avatar', 'phone_number', 'bio']
+        fields = ['phone_number', 'bio']
         widgets = {
             'phone_number': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '+1 (555) 000-0000'}),
             'bio': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3, 'placeholder': 'Tell us a little about yourself...'}),
-            'avatar': forms.FileInput(attrs={'class': 'form-file-input', 'accept': 'image/*'}),
         }
 

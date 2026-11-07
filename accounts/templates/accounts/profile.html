@@ -66,7 +66,7 @@
                 <div class="profile-header">
                     <div class="avatar-upload-wrapper">
                         <img src="{{ profile.avatar_url }}" alt="Avatar" class="profile-avatar-large"
-                            id="avatarPreview">
+                            id="avatarPreview" onerror="this.src='/static/avatar-neutral.svg'">
 
                         <label for="id_avatar" class="btn-change-avatar" title="Upload new photo">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -78,6 +78,7 @@
                             </svg>
                         </label>
                         {{ profile_form.avatar }}
+                        <input type="hidden" name="avatar_data" id="avatarDataInput">
                     </div>
 
                     <div class="profile-meta">
@@ -134,22 +135,61 @@
 
     </div>
 
-    <!-- Live Avatar Preview Script -->
+    <!-- Live Avatar Preview & Client-side Auto-compression Script -->
     <script>
         const avatarInput = document.getElementById('id_avatar');
         const avatarPreview = document.getElementById('avatarPreview');
+        const avatarDataInput = document.getElementById('avatarDataInput');
 
         if (avatarInput && avatarPreview) {
             avatarInput.classList.add('avatar-input-hidden');
             avatarInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (evt) {
-                        avatarPreview.src = evt.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                if (!file) return;
+
+                // Validate image file type
+                if (!file.type.match(/^image\//i)) {
+                    alert('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
+                    return;
                 }
+
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const img = new Image();
+                    img.onload = function () {
+                        // High quality client-side resize to max 300x300 for optimal fast upload on Vercel
+                        const maxDim = 300;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxDim) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            }
+                        } else {
+                            if (height > maxDim) {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Compress to lightweight JPEG data URI (~20KB)
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        avatarPreview.src = compressedDataUrl;
+                        if (avatarDataInput) {
+                            avatarDataInput.value = compressedDataUrl;
+                        }
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
             });
         }
     </script>

@@ -188,7 +188,7 @@
                         <img src="{{ user.profile.avatar_url }}" 
                              alt="{{ user.username }}" 
                              class="user-avatar-img"
-                             onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}'">
+                             onerror="this.src='/static/avatar-neutral.svg'">
                         <span class="status-indicator"></span>
                     </div>
                     <div class="user-details">
@@ -360,7 +360,7 @@
                             <img src="{{ user.profile.avatar_url }}" 
                                  alt="{{ user.username }}" 
                                  class="header-avatar-img"
-                                 onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}'">
+                                 onerror="this.src='/static/avatar-neutral.svg'">
                         </button>
                         <!-- Dropdown Menu -->
                         <div class="user-dropdown-menu" id="userDropdownMenu">
