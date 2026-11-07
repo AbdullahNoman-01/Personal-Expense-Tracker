@@ -7,6 +7,7 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     avatar = models.FileField(upload_to='avatars/', blank=True, null=True)
+    avatar_data = models.TextField(blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True)
     bio = models.TextField(blank=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -17,8 +18,13 @@ class Profile(models.Model):
 
     @property
     def avatar_url(self):
-        if self.avatar and hasattr(self.avatar, 'url'):
-            return self.avatar.url
+        if self.avatar_data:
+            return self.avatar_data
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except Exception:
+                pass
         seed = self.user.username or "Felix"
         return f"https://api.dicebear.com/7.x/avataaars/svg?seed={seed}"
 

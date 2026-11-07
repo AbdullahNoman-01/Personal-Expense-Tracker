@@ -23,9 +23,8 @@ ALLOWED_HOSTS = os.getenv(
     'localhost,127.0.0.1,.vercel.app'
 ).split(',')
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    'CSRF_TRUSTED_ORIGINS', ''
-).split(',')
+_csrf_env = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.vercel.app,http://127.0.0.1:8000,http://localhost:8000')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_env.split(',') if origin.strip()]
 # Application definition
 
 INSTALLED_APPS = [
@@ -125,7 +124,11 @@ USE_TZ = True
 
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# If running on Vercel / serverless environment, root is read-only except /tmp
+if os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV') or not os.access(BASE_DIR, os.W_OK):
+    MEDIA_ROOT = Path('/tmp/media')
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Static files (CSS, JavaScript, Images)

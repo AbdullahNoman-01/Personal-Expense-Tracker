@@ -1,3 +1,4 @@
+import base64
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -5,6 +6,24 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm, UserLoginForm, UserProfileUpdateForm, ProfileUpdateForm
 from .models import Profile
+
+
+def _process_avatar_upload(avatar_file):
+    """Safely converts an uploaded image to a base64 Data URI to prevent read-only filesystem errors on Vercel."""
+    if not avatar_file:
+        return None
+    try:
+        file_bytes = avatar_file.read()
+        if not file_bytes:
+            return None
+        content_type = getattr(avatar_file, 'content_type', '') or 'image/jpeg'
+        if not content_type.startswith('image/'):
+            content_type = 'image/jpeg'
+        b64_str = base64.b64encode(file_bytes).decode('utf-8')
+        return f"data:{content_type};base64,{b64_str}"
+    except Exception as e:
+        print("Avatar processing error:", e)
+        return None
 
 
 def register_view(request):
@@ -18,10 +37,20 @@ def register_view(request):
             user.set_password(form.cleaned_data['password'])
             user.save()
 
-            # Ensure profile exists and handle avatar upload
+            # Ensure profile exists and handle avatar upload safely
             profile, _ = Profile.objects.get_or_create(user=user)
-            if form.cleaned_data.get('avatar'):
-                profile.avatar = form.cleaned_data['avatar']
+            avatar_file = request.FILES.get('avatar') or form.cleaned_data.get('avatar')
+            if avatar_file:
+                avatar_uri = _process_avatar_upload(avatar_file)
+                if avatar_uri:
+                    profile.avatar_data = avatar_uri
+                try:
+                    profile.avatar = avatar_file
+                    profile.save()
+                except OSError:
+                    profile.avatar = None
+                    profile.save()
+            else:
                 profile.save()
 
             messages.success(request, f"Account created successfully for {user.username}! You are now logged in.")
@@ -89,11 +118,29 @@ def profile_view(request):
 
     if request.method == 'POST':
         user_form = UserProfileUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+        # We do not pass request.FILES directly to ModelForm to prevent Django's default
+        # FileSystemStorage from trying to write to read-only /var/task/media/ on Vercel!
+        profile_form = ProfileUpdateForm(request.POST, instance=profile)
 
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
-            profile_form.save()
+            profile_obj = profile_form.save(commit=False)
+
+            # Check if user uploaded an avatar file
+            avatar_file = request.FILES.get('avatar')
+            if avatar_file:
+                avatar_uri = _process_avatar_upload(avatar_file)
+                if avatar_uri:
+                    profile_obj.avatar_data = avatar_uri
+                # Avoid file write on read-only environments
+                profile_obj.avatar = None
+
+            try:
+                profile_obj.save()
+            except OSError:
+                profile_obj.avatar = None
+                profile_obj.save()
+
             messages.success(request, "Your profile has been updated successfully!")
             return redirect('profile')
         else:

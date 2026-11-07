@@ -3159,6 +3159,43 @@ body {
     color: var(--text-primary);
 }
 
+.budget-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.budget-actions-btns {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.btn-budget-action {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+}
+
+.btn-budget-action.btn-edit-budget:hover,
+.btn-budget-action.btn-edit-bill:hover {
+    color: var(--primary-theme);
+    background: var(--primary-theme-light);
+}
+
+.btn-budget-action.btn-del-budget:hover,
+.btn-budget-action.btn-del-bill:hover {
+    color: #DC2626;
+    background: #FEE2E2;
+}
+
 .budget-status-pill {
     font-size: 11px;
     font-weight: 700;
@@ -3363,6 +3400,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+}
+
+.bill-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bill-actions-btns {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 
 .bill-icon-title {

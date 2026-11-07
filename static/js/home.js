@@ -1044,13 +1044,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelDelete = document.getElementById('btnCancelDelete');
     const btnConfirmDelete = document.getElementById('btnConfirmDelete');
     let pendingDeleteId = null;
+    let pendingDeleteBudgetCat = null;
+    let pendingDeleteBillId = null;
 
     function openDeleteConfirmModal(id) {
         const item = transactions.find(t => String(t.id) === String(id));
         if (!item || !deleteModal) return;
 
         pendingDeleteId = id;
+        pendingDeleteBudgetCat = null;
+        pendingDeleteBillId = null;
         deleteConfirmText.innerHTML = `Are you sure you want to delete <strong>"${escapeHTML(item.title)}"</strong> (${item.type === 'income' ? '+' : '-'}$${parseFloat(item.amount).toFixed(2)})? This action will update your balance.`;
+        deleteModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openDeleteBudgetModal(cat) {
+        if (!deleteModal) return;
+        pendingDeleteBudgetCat = cat;
+        pendingDeleteId = null;
+        pendingDeleteBillId = null;
+        deleteConfirmText.innerHTML = `Are you sure you want to delete the spending budget limit for <strong>"${escapeHTML(cat)}"</strong>?`;
+        deleteModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openDeleteBillModal(id) {
+        if (!deleteModal) return;
+        const bill = bills.find(b => String(b.id) === String(id));
+        if (!bill) return;
+
+        pendingDeleteBillId = id;
+        pendingDeleteId = null;
+        pendingDeleteBudgetCat = null;
+        deleteConfirmText.innerHTML = `Are you sure you want to delete the recurring bill <strong>"${escapeHTML(bill.name)}"</strong> (${formatMoney(bill.amount)})?`;
         deleteModal.classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -1061,12 +1088,46 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = '';
         }
         pendingDeleteId = null;
+        pendingDeleteBudgetCat = null;
+        pendingDeleteBillId = null;
     }
 
     if (btnCancelDelete) btnCancelDelete.addEventListener('click', closeDeleteModal);
 
     if (btnConfirmDelete) {
         btnConfirmDelete.addEventListener('click', () => {
+            // 1. If deleting a Category Budget Plan
+            if (pendingDeleteBudgetCat) {
+                const cat = pendingDeleteBudgetCat;
+                delete budgets[cat];
+                saveBudgets(budgets);
+                renderBudgetPlanner();
+                closeDeleteModal();
+                showToast(`Budget plan for "${cat}" deleted successfully!`, 'info');
+                addNotification(`Deleted budget plan for ${cat}`, '🗑️');
+                return;
+            }
+
+            // 2. If deleting a Recurring Bill
+            if (pendingDeleteBillId) {
+                const bId = pendingDeleteBillId;
+                const bill = bills.find(b => String(b.id) === String(bId));
+                if (activeBillVanishTimers[bId]) {
+                    clearTimeout(activeBillVanishTimers[bId]);
+                    delete activeBillVanishTimers[bId];
+                }
+                bills = bills.filter(b => String(b.id) !== String(bId));
+                saveBills(bills);
+                renderBills();
+                closeDeleteModal();
+                if (bill) {
+                    showToast(`Bill "${bill.name}" deleted successfully!`, 'info');
+                    addNotification(`Deleted recurring bill: ${bill.name} (${formatMoney(bill.amount)})`, '🗑️');
+                }
+                return;
+            }
+
+            // 3. If deleting a Transaction
             if (!pendingDeleteId) return;
 
             const deletedItem = transactions.find(t => String(t.id) === String(pendingDeleteId));
@@ -1299,6 +1360,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenAddBillModal = document.getElementById('btnOpenAddBillModal');
     const addBillForm = document.getElementById('addBillForm');
     const activeBillVanishTimers = {};
+    let editingBillId = null;
+
+    function openEditBillModal(id) {
+        const bill = bills.find(b => String(b.id) === String(id));
+        if (!bill || !addBillModal) return;
+
+        editingBillId = bill.id;
+
+        const modalTitle = addBillModal.querySelector('.dash-modal-title');
+        const modalSub = addBillModal.querySelector('.dash-modal-sub');
+        const submitBtn = addBillForm ? addBillForm.querySelector('button[type="submit"] span') : null;
+
+        if (modalTitle) modalTitle.textContent = 'Edit Recurring Bill';
+        if (modalSub) modalSub.textContent = 'Modify recurring invoice or bill details.';
+        if (submitBtn) submitBtn.textContent = 'Update Bill';
+
+        const nameInput = document.getElementById('billNameInput');
+        const amountInput = document.getElementById('billAmountInput');
+        const dueDateInput = document.getElementById('billDueDateInput');
+        const catSelect = document.getElementById('billCategorySelect');
+
+        if (nameInput) nameInput.value = bill.name || '';
+        if (amountInput) amountInput.value = bill.amount || '';
+        if (dueDateInput) dueDateInput.value = bill.dueDate || '';
+        if (catSelect) catSelect.value = bill.category || 'Housing & Utilities';
+
+        addBillModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        if (nameInput) setTimeout(() => nameInput.focus(), 60);
+    }
 
     function scheduleBillVanish(billId, delayMs) {
         if (activeBillVanishTimers[billId]) {
@@ -1349,6 +1440,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="empty-icon">🧾</div>
                     <h4 class="empty-title">No upcoming bills</h4>
                     <p class="empty-sub">All bills are settled! Add new recurring bills anytime.</p>
+                    <button class="btn-dash-primary btn-empty-add" onclick="document.getElementById('btnOpenAddBillModal').click();">
+                        <span>+ Add First Bill</span>
+                    </button>
                 </div>
             `;
             return;
@@ -1378,7 +1472,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="bill-cat">${escapeHTML(bill.category)}</div>
                             </div>
                         </div>
-                        <span class="budget-status-pill ${statusClass}">${statusText}</span>
+                        <div class="bill-top-right">
+                            <span class="budget-status-pill ${statusClass}">${statusText}</span>
+                            <div class="bill-actions-btns">
+                                <button type="button" class="btn-budget-action btn-edit-bill" data-id="${bill.id}" title="Edit Bill" aria-label="Edit Bill">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-budget-action btn-del-bill" data-id="${bill.id}" title="Delete Bill" aria-label="Delete Bill">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="bill-amount-due">
@@ -1412,6 +1522,25 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.onclick = function () {
                 const id = this.getAttribute('data-id');
                 payBill(id);
+            };
+        });
+
+        // Bind Edit and Delete bill buttons
+        const editBtns = billsContainer.querySelectorAll('.btn-edit-bill');
+        editBtns.forEach(btn => {
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                const id = this.getAttribute('data-id');
+                openEditBillModal(id);
+            };
+        });
+
+        const delBtns = billsContainer.querySelectorAll('.btn-del-bill');
+        delBtns.forEach(btn => {
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                const id = this.getAttribute('data-id');
+                openDeleteBillModal(id);
             };
         });
     }
@@ -1455,6 +1584,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnOpenAddBillModal) {
         btnOpenAddBillModal.addEventListener('click', () => {
             if (addBillModal) {
+                editingBillId = null;
+                if (addBillForm) addBillForm.reset();
+                const modalTitle = addBillModal.querySelector('.dash-modal-title');
+                const modalSub = addBillModal.querySelector('.dash-modal-sub');
+                const submitBtn = addBillForm ? addBillForm.querySelector('button[type="submit"] span') : null;
+                if (modalTitle) modalTitle.textContent = 'Add Recurring Bill';
+                if (modalSub) modalSub.textContent = 'Track upcoming bills so you never miss a payment.';
+                if (submitBtn) submitBtn.textContent = 'Save Bill';
+
                 addBillModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
             }
@@ -1463,6 +1601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeAddBillBtn && addBillModal) {
         closeAddBillBtn.addEventListener('click', () => {
+            editingBillId = null;
             addBillModal.classList.remove('show');
             document.body.style.overflow = '';
         });
@@ -1481,6 +1620,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const icon = category.includes('Entertainment') ? '🎬' : (category.includes('Food') ? '🍔' : (category.includes('Shopping') ? '🛍️' : '⚡'));
+
+            // Check if editing an existing bill
+            if (editingBillId) {
+                const bill = bills.find(b => String(b.id) === String(editingBillId));
+                if (bill) {
+                    bill.name = name;
+                    bill.amount = amount;
+                    bill.dueDate = dueDate;
+                    bill.category = category;
+                    bill.icon = icon;
+                    saveBills(bills);
+                    renderBills();
+                    showToast(`Bill "${name}" updated successfully!`, 'success');
+                    addNotification(`Updated recurring bill: ${name} (${formatMoney(amount)})`, '✏️');
+                }
+                editingBillId = null;
+                addBillForm.reset();
+                addBillModal.classList.remove('show');
+                document.body.style.overflow = '';
+                return;
+            }
+
             const newBill = {
                 id: 'bill_' + Date.now(),
                 name,
@@ -1488,7 +1650,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dueDate,
                 category,
                 status: 'Unpaid',
-                icon: category.includes('Entertainment') ? '🎬' : '⚡'
+                icon: icon
             };
 
             bills.unshift(newBill);
@@ -1513,6 +1675,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenSetBudgetModal = document.getElementById('btnOpenSetBudgetModal');
     const setBudgetForm = document.getElementById('setBudgetForm');
 
+    function openEditBudgetModal(cat) {
+        if (!setBudgetModal) return;
+        const modalTitle = setBudgetModal.querySelector('.dash-modal-title');
+        if (modalTitle) modalTitle.textContent = `Edit Budget Limit (${cat})`;
+
+        const catSelect = document.getElementById('budgetCategorySelect');
+        const limitInput = document.getElementById('budgetLimitInput');
+        if (catSelect) catSelect.value = cat;
+        if (limitInput) {
+            limitInput.value = budgets[cat] || '';
+            setTimeout(() => limitInput.focus(), 60);
+        }
+        setBudgetModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
     function renderBudgetPlanner() {
         if (!budgetGrid) return;
 
@@ -1526,6 +1704,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const catNames = Object.keys(budgets);
+
+        if (catNames.length === 0) {
+            budgetGrid.innerHTML = `
+                <div class="empty-state-card show" style="grid-column: 1/-1;">
+                    <div class="empty-icon">🎯</div>
+                    <h4 class="empty-title">No budget plans yet</h4>
+                    <p class="empty-sub">Set monthly spending limits for your categories to track your financial health!</p>
+                    <button class="btn-dash-primary btn-empty-add" onclick="document.getElementById('btnOpenSetBudgetModal').click();">
+                        <span>+ Set First Budget</span>
+                    </button>
+                </div>
+            `;
+            return;
+        }
 
         budgetGrid.innerHTML = catNames.map(cat => {
             const limit = budgets[cat] || 100;
@@ -1550,13 +1742,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const meta = getCategoryMeta(cat, 'expense');
 
             return `
-                <div class="budget-card">
+                <div class="budget-card" data-cat="${escapeHTML(cat)}">
                     <div class="budget-card-header">
                         <div class="budget-cat-left">
                             <span class="budget-cat-icon">${meta.icon}</span>
                             <span class="budget-cat-title">${escapeHTML(cat)}</span>
                         </div>
-                        <span class="budget-status-pill ${statusPillClass}">${statusText}</span>
+                        <div class="budget-header-right">
+                            <span class="budget-status-pill ${statusPillClass}">${statusText}</span>
+                            <div class="budget-actions-btns">
+                                <button type="button" class="btn-budget-action btn-edit-budget" data-cat="${escapeHTML(cat)}" title="Edit Budget Limit" aria-label="Edit Budget">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="btn-budget-action btn-del-budget" data-cat="${escapeHTML(cat)}" title="Delete Budget Plan" aria-label="Delete Budget">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="budget-amounts-row">
@@ -1574,13 +1782,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }).join('');
+
+        // Bind Edit and Delete budget buttons
+        const editBtns = budgetGrid.querySelectorAll('.btn-edit-budget');
+        editBtns.forEach(btn => {
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                const cat = this.getAttribute('data-cat');
+                openEditBudgetModal(cat);
+            };
+        });
+
+        const delBtns = budgetGrid.querySelectorAll('.btn-del-budget');
+        delBtns.forEach(btn => {
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                const cat = this.getAttribute('data-cat');
+                openDeleteBudgetModal(cat);
+            };
+        });
     }
 
     if (btnOpenSetBudgetModal) {
         btnOpenSetBudgetModal.addEventListener('click', () => {
             if (setBudgetModal) {
+                const modalTitle = setBudgetModal.querySelector('.dash-modal-title');
+                if (modalTitle) modalTitle.textContent = 'Set Category Budget';
+                const limitInput = document.getElementById('budgetLimitInput');
+                if (limitInput) limitInput.value = '';
                 setBudgetModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
+                if (limitInput) setTimeout(() => limitInput.focus(), 60);
             }
         });
     }
@@ -2263,7 +2495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeDepositModal();
             closeWithdrawModal();
             if (setBudgetModal) { setBudgetModal.classList.remove('show'); document.body.style.overflow = ''; }
-            if (addBillModal) { addBillModal.classList.remove('show'); document.body.style.overflow = ''; }
+            if (addBillModal) { addBillModal.classList.remove('show'); document.body.style.overflow = ''; editingBillId = null; }
             if (proUpgradeModal) { proUpgradeModal.classList.remove('show'); document.body.style.overflow = ''; }
             closeColorPopover();
             closeNotificationDropdown();
