@@ -8,6 +8,11 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load Root .env (Email Configuration)
+load_dotenv(BASE_DIR / ".env")
+
+# Load Core .env (Database Configuration)
+load_dotenv(BASE_DIR / "core" / ".env", override=False)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -154,16 +159,28 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Email Configuration (Gmail SMTP & Password Reset)
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend'
+)
+
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 't')
+
+EMAIL_USE_TLS = os.getenv(
+    'EMAIL_USE_TLS', 'True'
+).lower() in ('true', '1', 't')
+
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
 DEFAULT_FROM_EMAIL = os.getenv(
     'DEFAULT_FROM_EMAIL',
-    f"Personal Expense Tracker <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "Personal Expense Tracker <noreply@expense-tracker.com>"
+    f'Personal Expense Tracker <{EMAIL_HOST_USER}>'
+    if EMAIL_HOST_USER
+    else 'Personal Expense Tracker <noreply@expense-tracker.com>'
 )
+
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
 
 
